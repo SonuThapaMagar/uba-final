@@ -8,14 +8,14 @@ const ColorPicker = () => {
       <label className="block text-sm font-medium text-gray-200 mb-1">Pick a Color</label>
 
       <div className="relative w-16 h-16">
-        {/* This label acts as the circular color preview */}
+        {/* Circular color preview */}
         <label
           htmlFor="color-input"
           className="block w-full h-full rounded-full cursor-pointer border-2 border-gray-500"
           style={{ backgroundColor: color }}
           aria-label="Current color"
         />
-        {/* The actual input is invisible and overlaid on top */}
+        
         <input
           id="color-input"
           type="color"

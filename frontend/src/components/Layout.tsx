@@ -1,6 +1,5 @@
-import type { ReactNode } from 'react';
-import Header from './Header';
-import Filter from './Filter';
+import { type ReactNode } from 'react';
+import Sidebar from './Sidebar';
 
 interface LayoutProps {
   children: ReactNode;
@@ -8,12 +7,11 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-[#fff]">
-      {/* Header */}
-      <Header />
-
-      {/* Filter Section */}
-      <Filter/>
+    <div className="h-screen bg-[#131314] flex flex-col md:flex-row overflow-hidden">
+      <Sidebar />
+      <main className="flex-1 flex flex-col p-4">
+        {children}
+      </main>
     </div>
   );
 };

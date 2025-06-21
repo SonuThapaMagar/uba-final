@@ -11,7 +11,7 @@ export default function Sidebar() {
     <aside className="bg-[#1B1B1B] text-white w-full md:w-64 h-full flex flex-col py-6 px-4 gap-0 overflow-y-auto flex-shrink-0">
       {/* Sidebar Header */}
       <div className="flex items-center justify-between mb-8">
-        {/* Logo/Project Name */}
+        {/* Project Name */}
         <div className="flex items-center gap-2">
           <FaFont className="text-2xl" />
           <span className="font-bold text-lg">Type Tester</span>

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato&family=Merriweather&family=Montserrat&family=Nunito+Sans&family=Open+Sans&family=Oswald&family=PT+Sans&family=Playfair+Display&family=Poppins&family=Raleway&family=Roboto&family=Source+Code+Pro&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

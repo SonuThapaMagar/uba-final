@@ -9,10 +9,18 @@ export const AppDataSource = new DataSource({
     port: parseInt(process.env.DB_PORT || '3306'),
     username: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'font_project',
+    database: process.env.DB_NAME || 'font',
     synchronize: true,
-    logging: false,
+    logging: true,
     entities: [Font],
     migrations: [],
     subscribers: [],
-})
+});
+
+AppDataSource.initialize()
+    .then(() => {
+        console.log('Data Source has been initialized!');
+    })
+    .catch((err) => {
+        console.error('Error during Data Source initialization:', err);
+    });

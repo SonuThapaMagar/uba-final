@@ -3,15 +3,15 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 @Entity()
 export class Font {
     @PrimaryGeneratedColumn()
-    id: number
+    id!: number;
 
     @Column({ type: 'varchar', length: 255, nullable: false })
-    name: string;
+    name!: string;
 
     @Column({ type: 'varchar', length: 255, nullable: false })
-    filePath: string;
+    filePath!: string;
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 
 }

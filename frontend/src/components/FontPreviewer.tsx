@@ -1,21 +1,38 @@
-import { useState } from 'react';
-import FontCard from './FontCard';
-
-const sampleFonts = [
-  'Roboto',
-  'Lato',
-  'Montserrat',
-  'Oswald',
-  'Source Code Pro',
-  'Raleway',
-];
+import { useEffect, useState } from "react";
+import FontCard from "./FontCard";
 
 const FontPreviewer = () => {
-  const [previewText, setPreviewText] = useState('Type to preview fonts');
+  const [previewText, setPreviewText] = useState("Type to preview fonts");
+  const [fonts, setFonts] = useState<
+    { id: number; name: string; filePath: string }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch fonts from backend
+  useEffect(() => {
+    const fetchFonts = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/fonts");
+        if (!response.ok) throw new Error("Failed to fetch fonts");
+        const data = await response.json();
+        setFonts(data);
+      } catch (err) {
+        setError("Error loading fonts. Please try again.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFonts();
+  }, []);
+
+  if (loading) return <div className="text-white">Loading fonts...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="w-full h-full text-white flex flex-col">
-      {/* Input Field*/}
+      {/* Input Field */}
       <div className="mb-8 flex-shrink-0">
         <input
           type="text"
@@ -26,14 +43,18 @@ const FontPreviewer = () => {
         />
       </div>
 
-      {/* Vertical Font List*/}
+      {/* Vertical Font List */}
       <div className="flex-grow flex flex-col overflow-y-auto">
-        {sampleFonts.map((font) => (
-          <FontCard key={font} fontFamily={font} text={previewText} />
+        {fonts.map((font) => (
+          <FontCard
+            key={font.id}
+            fontFamily={font.name}
+            text={previewText}
+          />
         ))}
       </div>
     </div>
   );
 };
 
-export default FontPreviewer; 
+export default FontPreviewer;

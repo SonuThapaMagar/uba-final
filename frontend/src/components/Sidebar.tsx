@@ -30,12 +30,12 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex flex-col gap-4">
         {/* Divider */}
-        <hr className="my-4 border-gray-700" />
+        <hr className="my-2 border-gray-700" />
         {/* Filters */}
         <div className="flex flex-col gap-4">
           <ColorPicker />
           <FontSize />
-          <hr className="my-4 border-gray-700" />
+          <hr className="my-2 border-gray-700" />
           <LanguageFilter />
         </div>
       </nav>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { FaFilter, FaSearch } from 'react-icons/fa';
 import FontCard from './FontCard';
 
 interface FontPreviewerProps {
@@ -32,6 +33,8 @@ const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize, selectedLanguag
   const [showSamples, setShowSamples] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOption, setSortOption] = useState('popular'); // 'popular', 'new', 'az', 'za'
 
   // Mapping of language names to IDs
   const languageMap: { [key: string]: number } = {
@@ -82,14 +85,34 @@ const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize, selectedLanguag
     };
   }, [showSamples]);
 
-  const totalPages = Math.ceil(fonts.length / FONTS_PER_PAGE);
+  // Filter and sort fonts
+  let filteredFonts = fonts.filter(font =>
+    font.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  if (sortOption === 'az') {
+    filteredFonts = filteredFonts.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sortOption === 'za') {
+    filteredFonts = filteredFonts.sort((a, b) => b.name.localeCompare(a.name));
+  } else if (sortOption === 'new') {
+    filteredFonts = filteredFonts.sort((a, b) => (b.id || 0) - (a.id || 0));
+  } // 'popular' can be default order or you can add a popularity property
+
+  const totalPages = Math.ceil(filteredFonts.length / FONTS_PER_PAGE);
   const startIdx = (currentPage - 1) * FONTS_PER_PAGE;
   const endIdx = startIdx + FONTS_PER_PAGE;
-  const fontsToShow = fonts.slice(startIdx, endIdx);
+  const fontsToShow = filteredFonts.slice(startIdx, endIdx);
 
   const goToPage = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
+  };
+
+  // Map sortOption to label
+  const sortLabels: Record<string, string> = {
+    popular: 'Trending',
+    new: 'New',
+    az: 'A - Z',
+    za: 'Z - A',
   };
 
   if (loading) return <div className="text-white">Loading fonts...</div>;
@@ -97,6 +120,47 @@ const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize, selectedLanguag
 
   return (
     <div className="w-full h-full text-white flex flex-col relative">
+      {/* Redesigned Search and Filter Bar */}
+      <div className="mb-6 flex w-full">
+        <div className="flex items-center w-full rounded-full bg-[#232325] px-4 py-2">
+          <FaSearch className="text-gray-400 text-lg mr-2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="flex-1 bg-transparent outline-none text-white placeholder-gray-400 text-base"
+            placeholder="Search fonts"
+          />
+          <div className="h-6 w-px bg-gray-700 mx-4" />
+          <div className="relative flex items-center">
+            <span className="text-xs text-gray-400 mr-1">Sort by</span>
+            <button
+              className="flex items-center gap-1 font-semibold text-white focus:outline-none"
+              onClick={() => setShowSamples(false)} // just to avoid popover overlap
+            >
+              {sortLabels[sortOption]}
+              <svg className="w-4 h-4 ml-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <select
+              value={sortOption}
+              onChange={e => {
+                setSortOption(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer bg-[#232325]"
+            >
+              <option value="popular">Trending</option>
+              <option value="new">New</option>
+              <option value="az">A - Z</option>
+              <option value="za">Z - A</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      {/* Preview input and language sample popover below search/filter */}
       <div className="mb-8 flex-shrink-0 relative">
         <input
           ref={inputRef}
@@ -133,6 +197,7 @@ const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize, selectedLanguag
           </div>
         )}
       </div>
+      {/* Font cards and pagination below */}
       <div className="flex-grow flex flex-col overflow-y-auto">
         {fontsToShow.map((font) => (
           <FontCard

@@ -1,24 +1,25 @@
-import { useEffect, useState } from "react";
-import FontCard from "./FontCard";
+import { useState, useEffect } from 'react';
+import FontCard from './FontCard';
 
-const FontPreviewer = () => {
-  const [previewText, setPreviewText] = useState("Type to preview fonts");
-  const [fonts, setFonts] = useState<
-    { id: number; name: string; filePath: string }[]
-  >([]);
+interface FontPreviewerProps {
+  fontSize: number;
+}
+
+const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize }) => {
+  const [previewText, setPreviewText] = useState('Type to preview fonts');
+  const [fonts, setFonts] = useState<{ id: number; name: string; filePath: string; fontSize: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch fonts from backend
   useEffect(() => {
     const fetchFonts = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/fonts");
-        if (!response.ok) throw new Error("Failed to fetch fonts");
+        const response = await fetch('http://localhost:3000/api/fonts');
+        if (!response.ok) throw new Error('Failed to fetch fonts');
         const data = await response.json();
         setFonts(data);
       } catch (err) {
-        setError("Error loading fonts. Please try again.");
+        setError('Error loading fonts. Please try again.');
         console.error(err);
       } finally {
         setLoading(false);
@@ -42,7 +43,6 @@ const FontPreviewer = () => {
           placeholder="Type something to preview..."
         />
       </div>
-
       {/* Vertical Font List */}
       <div className="flex-grow flex flex-col overflow-y-auto">
         {fonts.map((font) => (
@@ -50,6 +50,8 @@ const FontPreviewer = () => {
             key={font.id}
             fontFamily={font.name}
             text={previewText}
+            filePath={font.filePath}
+            fontSize={fontSize}
           />
         ))}
       </div>

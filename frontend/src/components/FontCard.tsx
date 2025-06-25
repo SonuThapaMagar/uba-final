@@ -5,9 +5,10 @@ interface FontCardProps {
   text: string;
   filePath: string;
   fontSize: number;
+  color?: string;
 }
 
-const FontCard: React.FC<FontCardProps> = ({ fontFamily, text, filePath, fontSize }) => {
+const FontCard: React.FC<FontCardProps> = ({ fontFamily, text, filePath, fontSize, color = '#fff' }) => {
   useEffect(() => {
     const fileName = filePath.split(/[\\/]/).pop() || '';
     const fontUrl = `http://localhost:3000/api/fonts/${encodeURIComponent(fileName)}`;
@@ -30,7 +31,7 @@ const FontCard: React.FC<FontCardProps> = ({ fontFamily, text, filePath, fontSiz
         <h3 className="text-base font-semibold text-white">{fontFamily}</h3>
         <span className="text-xs">Size: {fontSize}px</span>
       </div>
-      <p className="text-white" style={{ fontFamily: `${fontFamily}-custom`, fontSize: `${fontSize}px` }}>
+      <p className="text-white" style={{ fontFamily: `${fontFamily}-custom`, fontSize: `${fontSize}px`, color }}>
         {text || 'Like this'}
       </p>
     </div>

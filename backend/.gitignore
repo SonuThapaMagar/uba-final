@@ -1,5 +1,8 @@
 # Node modules
 node_modules/
+fonts/
+migrations/
+fonts/
 
 # Logs
 npm-debug.log*

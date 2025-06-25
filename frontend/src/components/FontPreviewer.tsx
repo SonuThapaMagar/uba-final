@@ -3,18 +3,21 @@ import FontCard from './FontCard';
 
 interface FontPreviewerProps {
   fontSize: number;
+  selectedLanguages: string[];
 }
 
-const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize }) => {
+const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize, selectedLanguages }) => {
   const [previewText, setPreviewText] = useState('Type to preview fonts');
-  const [fonts, setFonts] = useState<{ id: number; name: string; filePath: string; fontSize: number }[]>([]);
+  const [fonts, setFonts] = useState<{ id: number; name: string; filePath: string; fontSize: number; language: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFonts = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/fonts');
+        // Construct query string for languages
+        const query = selectedLanguages.length > 0 ? `?languages=${selectedLanguages.join('&languages=')}` : '';
+        const response = await fetch(`http://localhost:3000/api/fonts${query}`);
         if (!response.ok) throw new Error('Failed to fetch fonts');
         const data = await response.json();
         setFonts(data);
@@ -26,14 +29,13 @@ const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize }) => {
       }
     };
     fetchFonts();
-  }, []);
+  }, [selectedLanguages]); // Re-fetch when selectedLanguages changes
 
   if (loading) return <div className="text-white">Loading fonts...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="w-full h-full text-white flex flex-col">
-      {/* Input Field */}
       <div className="mb-8 flex-shrink-0">
         <input
           type="text"
@@ -43,7 +45,6 @@ const FontPreviewer: React.FC<FontPreviewerProps> = ({ fontSize }) => {
           placeholder="Type something to preview..."
         />
       </div>
-      {/* Vertical Font List */}
       <div className="flex-grow flex flex-col overflow-y-auto">
         {fonts.map((font) => (
           <FontCard

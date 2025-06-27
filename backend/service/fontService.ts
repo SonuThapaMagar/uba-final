@@ -3,11 +3,11 @@ import { AppDataSource } from '../config/database';
 import { Font } from '../entity/fonts';
 import { Language } from '../entity/language';
 
-export const saveFontToDB = async (name: string, filePath: string, langIds: number[]): Promise<void> => {
+export const saveFontToDB = async (name: string, filePath: string, langIds: number[],fontSize: number = 16): Promise<void> => {
   const font = new Font();
   font.name = name;
   font.filePath = filePath;
-
+  font.fontSize = fontSize;
   const languages = await AppDataSource.manager.findBy(Language, { id: In(langIds) });
   font.languages = languages;
 

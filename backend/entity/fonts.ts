@@ -15,8 +15,15 @@ export class Font {
   @Column({ type: 'int', nullable: true, default: 16 })
   fontSize!: number;
 
+  @Column({ default: 0 })
+  popularity!: number;
+
   @ManyToMany(() => Language)
-  @JoinTable()
+  @JoinTable({
+    name: 'font_languages',
+    joinColumn: { name: 'fontId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'languageId', referencedColumnName: 'id' },
+  })
   languages!: Language[];
 
   @CreateDateColumn()

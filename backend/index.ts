@@ -6,7 +6,6 @@ import { fontService } from './service/fontService';
 import * as path from 'path';
 import * as fs from 'fs';
 import multer from 'multer';
-import { In } from 'typeorm';
 
 const app: Express = express();
 
@@ -16,17 +15,14 @@ app.use(cors());
 // Middleware to parse JSON
 app.use(express.json());
 
-// multer config for file uploads
+// Multer config for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = './fonts';
-    // Ensure fonts directory exists
     fs.mkdirSync(uploadPath, { recursive: true });
-    // Save files to the fonts directory
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    // Unique filename with timestamp
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
@@ -35,34 +31,72 @@ const upload = multer({ storage });
 
 const PORT: number = parseInt(process.env.PORT || '3000');
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Type Tester Backend is running!');
-});
-
-// Route to fetch all fonts
-app.get('/api/fonts', async (req, res) => {
-  const langIds = req.query.langIds 
+// Route to fetch fonts with filtering, sorting, and pagination
+app.get('/api/fonts', async (req: Request, res: Response) => {
+  const langIds = req.query.langIds
     ? Array.isArray(req.query.langIds)
       ? req.query.langIds.map(id => parseInt(id as string))
       : [parseInt(req.query.langIds as string)]
     : [];
+  const searchTerm = req.query.searchTerm as string | undefined;
+  const sortOption = req.query.sortOption as string | undefined;
+  const page = parseInt(req.query.page as string) || 1;
+  const perPage = parseInt(req.query.perPage as string) || 10;
 
-  let fonts;
-  if (langIds.length > 0) {
-    fonts = await AppDataSource.manager
+  try {
+    let query = AppDataSource.manager
       .createQueryBuilder(Font, 'font')
-      .leftJoinAndSelect('font.languages', 'language')
-      .where('language.id IN (:...langIds)', { langIds })
-      .getMany();
-  } else {
-    fonts = await AppDataSource.manager.find(Font, { relations: ['languages'] });
-  }
+      .leftJoinAndSelect('font.languages', 'language');
 
-  res.json(fonts.map(font => ({
-    ...font,
-    languages: font.languages.map(l => l.name),
-  })));
+    // Apply language filter
+    if (langIds.length > 0) {
+      query = query.where('language.id IN (:...langIds)', { langIds });
+    }
+
+    // Apply search term filter
+    if (searchTerm) {
+      query = query.andWhere('font.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+    }
+
+    // Apply sorting
+    if (sortOption) {
+      if (sortOption === 'az') {
+        query = query.orderBy('font.name', 'ASC');
+      } else if (sortOption === 'za') {
+        query = query.orderBy('font.name', 'DESC');
+      } else if (sortOption === 'new') {
+        query = query.orderBy('font.id', 'DESC');
+      } else if (sortOption === 'popular') {
+        query = query.orderBy('font.popularity', 'DESC');
+      }
+    } else {
+      query = query.orderBy('font.id', 'DESC');
+    }
+
+    // Apply pagination
+    query = query.skip((page - 1) * perPage).take(perPage);
+
+    // Get fonts and total count
+    const [fonts, total] = await query.getManyAndCount();
+
+    res.json({
+      fonts: fonts.map(font => ({
+        id: font.id,
+        name: font.name,
+        filePath: font.filePath,
+        fontSize: font.fontSize || 16, // Include fontSize
+        languages: font.languages.map(l => l.name),
+      })),
+      total,
+      totalPages: Math.ceil(total / perPage),
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error('Error fetching fonts:', error);
+    res.status(500).send('Error fetching fonts');
+  }
 });
+
 // Route to upload a font file
 app.post('/api/fonts', upload.single('fontFile'), async (req, res) => {
   if (!req.file) {
@@ -71,9 +105,9 @@ app.post('/api/fonts', upload.single('fontFile'), async (req, res) => {
   }
   const { name, fontSize } = req.body;
   const langIds = req.body.lang_id
-    ? (Array.isArray(req.body.lang_id)
-        ? req.body.lang_id.map((id: string) => parseInt(id))
-        : [parseInt(req.body.lang_id)])
+    ? Array.isArray(req.body.lang_id)
+      ? req.body.lang_id.map((id: string) => parseInt(id))
+      : [parseInt(req.body.lang_id)]
     : [];
 
   if (!name || langIds.length === 0) {
@@ -82,19 +116,79 @@ app.post('/api/fonts', upload.single('fontFile'), async (req, res) => {
   }
 
   const filePath = path.join('./fonts', req.file.filename);
-  await fontService.saveFontToDB(name, filePath, langIds);
+  await fontService.saveFontToDB(name, filePath, langIds, parseInt(fontSize) || 16);
 
   res.status(201).json({ message: 'Font uploaded', filePath });
 });
 
-// Route to serve font files
-app.get('/api/fonts/:fileName', (req: Request, res: Response) => {
-  const fileName = req.params.fileName;
-  const filePath = path.join(__dirname, 'fonts', fileName);
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.status(404).send('Font file not found');
+// Route to serve font files and increment popularity
+app.get('/api/fonts', async (req: Request, res: Response) => {
+  const langIds = req.query.langIds
+    ? Array.isArray(req.query.langIds)
+      ? req.query.langIds.map(id => parseInt(id as string))
+      : [parseInt(req.query.langIds as string)]
+    : [];
+  const searchTerm = req.query.searchTerm as string | undefined;
+  const sortOption = req.query.sortOption as string | undefined;
+  const page = parseInt(req.query.page as string) || 1;
+  const perPage = parseInt(req.query.perPage as string) || 10;
+
+  try {
+    let query = AppDataSource.manager
+      .createQueryBuilder(Font, 'font')
+      .leftJoinAndSelect('font.languages', 'language');
+
+    console.log('Lang IDs:', langIds); // Debug log
+    console.log('Search Term:', searchTerm); // Debug log
+    console.log('Sort Option:', sortOption); // Debug log
+
+    // Apply language filter
+    if (langIds.length > 0) {
+      query = query.andWhere('language.id IN (:...langIds)', { langIds });
+    }
+
+    // Apply search term filter
+    if (searchTerm) {
+      query = query.andWhere('font.name LIKE :searchTerm', { searchTerm: `%${searchTerm}%` });
+    }
+
+    // Apply sorting
+    if (sortOption) {
+      if (sortOption === 'az') {
+        query = query.orderBy('font.name', 'ASC');
+      } else if (sortOption === 'za') {
+        query = query.orderBy('font.name', 'DESC');
+      } else if (sortOption === 'new') {
+        query = query.orderBy('font.id', 'DESC');
+      } else if (sortOption === 'popular') {
+        query = query.orderBy('font.popularity', 'DESC');
+      }
+    } else {
+      query = query.orderBy('font.id', 'DESC');
+    }
+
+    // Apply pagination
+    query = query.skip((page - 1) * perPage).take(perPage);
+
+    // Get fonts and total count
+    const [fonts, total] = await query.getManyAndCount();
+    console.log('Fetched fonts:', fonts); // Debug log
+
+    res.json({
+      fonts: fonts.map(font => ({
+        id: font.id,
+        name: font.name,
+        filePath: font.filePath,
+        fontSize: font.fontSize || 16,
+        languages: font.languages.map(l => l.name),
+      })),
+      total,
+      totalPages: Math.ceil(total / perPage),
+      currentPage: page,
+    });
+  } catch (error:any) {
+    console.error('Error fetching fonts:', error);
+    res.status(500).json({ error: 'Error fetching fonts', details: error.message });
   }
 });
 

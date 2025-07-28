@@ -61,14 +61,6 @@ The backend will run on `http://localhost:3000`
 
 The frontend will run on `http://localhost:5173`
 
-## Fixed Issues
-
-- ✅ Added favicon.svg to prevent 404 errors
-- ✅ Fixed CSS import path in index.html
-- ✅ Added CORS support to backend
-- ✅ Improved database connection error handling
-- ✅ Added default environment variables
-
 ## Technologies Used
 
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS

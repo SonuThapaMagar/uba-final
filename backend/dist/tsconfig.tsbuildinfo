@@ -1,0 +1,1 @@
+{"root":["../index.ts","../config/database.ts","../config/seedlanguages.ts","../entity/fonts.ts","../entity/language.ts","../migrations/1751012047308-initschema.ts","../service/fontservice.ts"],"version":"5.8.3"}

@@ -1,8 +1,11 @@
-import { useState } from "react";
+import React from "react";
 
-const ColorPicker = () => {
-  const [color, setColor] = useState("#FF7F50");
+interface ColorPickerProps {
+  color: string;
+  setColor: (color: string) => void;
+}
 
+const ColorPicker: React.FC<ColorPickerProps> = ({ color, setColor }) => {
   return (
     <div className="w-full max-w-xs mx-auto bg-[#282A2C] rounded-xl shadow-md p-4 flex flex-col items-center gap-3">
       <label className="block text-sm font-medium text-gray-200 mb-1">Pick a Color</label>

@@ -7,10 +7,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": ".",
     "experimentalDecorators": true, 
     "emitDecoratorMetadata": true 
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "migrations/1751011858816-InitSchema.js"],
   "exclude": ["node_modules"]
 }

@@ -1,15 +1,18 @@
-import { FaFont, FaMoon, FaSun } from "react-icons/fa";
-import ColorPicker from "./ColorPicker";
-import FontSize from "./FontSize";
-import LanguageFilter from "./LanguageFilter";
-import { useState } from "react";
+// components/Sidebar.tsx
+import { FaFont, FaMoon, FaSun } from 'react-icons/fa';
+import ColorPicker from './ColorPicker';
+import FontSize from './FontSize';
+import LanguageFilter from './LanguageFilter';
+import { useState } from 'react';
 
 interface SidebarProps {
-  fontSize: number;
+  fontSize:number;
   setFontSize: (size: number) => void;
+  selectedLanguages: string[];
+  setSelectedLanguages: (languages: string[]) => void;
 }
 
-export default function Sidebar({ fontSize, setFontSize }: SidebarProps) {
+export default function Sidebar({ fontSize, setFontSize, selectedLanguages, setSelectedLanguages }: SidebarProps) {
   const [darkMode, setDarkMode] = useState(false);
 
   return (
@@ -33,7 +36,7 @@ export default function Sidebar({ fontSize, setFontSize }: SidebarProps) {
           <ColorPicker />
           <FontSize onFontSizeChange={setFontSize} fontSize={fontSize} />
           <hr className="my-2 border-gray-700" />
-          <LanguageFilter />
+          <LanguageFilter selectedLanguages={selectedLanguages} setSelectedLanguages={setSelectedLanguages} />
         </div>
       </nav>
     </aside>

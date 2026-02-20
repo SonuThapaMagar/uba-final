@@ -1,17 +1,20 @@
 import { useState } from 'react';
 
-const LanguageFilter = () => {
-    const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['English']);
+interface LanguageFilterProps {
+    selectedLanguages: string[];
+    setSelectedLanguages: (languages: string[]) => void;
+}
 
+const LanguageFilter: React.FC<LanguageFilterProps> = ({ selectedLanguages, setSelectedLanguages }) => {
     const handleLanguageChange = (language: string) => {
-        setSelectedLanguages(prev =>
-            prev.includes(language)
-                ? prev.filter(lang => lang !== language)
-                : [...prev, language]
-        );
+        if (selectedLanguages.includes(language)) {
+            setSelectedLanguages(selectedLanguages.filter(lang => lang !== language));
+        } else {
+            setSelectedLanguages([...selectedLanguages, language]);
+        }
     };
 
-    const languages = ['English', 'Hindi', 'Chinese'];
+    const languages = ['English', 'Nepali', 'Chinese'];
 
     return (
         <div className="w-full max-w-sm bg-[#282A2C] p-4 rounded-lg text-white">

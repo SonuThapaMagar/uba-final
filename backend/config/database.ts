@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm'
-import { Font } from '../entity/fonts';
+import Font from '../entity/fonts'
+import Language from '../entity/language';
 
 require('dotenv').config();
 
@@ -10,10 +11,10 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'font',
-    synchronize: true,
+    synchronize: false,
     logging: false,
-    entities: [Font],
-    migrations: [],
+    entities: [Font,Language],
+    migrations: ['../migrations/*.ts'],
     subscribers: [],
 });
 
